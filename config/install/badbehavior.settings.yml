@@ -1,0 +1,20 @@
+log_table: '{bad_behavior_log}'
+display_stats: false
+eu_cookie: false
+mail: ''
+logging: true
+verbose: false
+log_timeformat: '24'
+offsite_forms: false
+strict: false
+httpbl:
+  key: ''
+  threat: 25
+  age: 30
+  quicklink: ''
+  quicklinktext: 'Customize This'
+reverse_proxy:
+  enabled: false
+  header: 'X-Forwarded-For'
+  addresses: ''
+langcode: en

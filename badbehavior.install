@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Bad Behavior module.
+ */
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+
+/**
+ * Implements hook_schema().
+ */
+function badbehavior_schema() {
+  $schema['bad_behavior_log'] = [
+    'description' => 'Stores hit logs for the Bad Behavior module.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'ip' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'date' => [
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'TIMESTAMP WITHOUT TIMEZONE',
+        'not null' => TRUE,
+        'default' => '1970-01-01 00:00:00',
+      ],
+      'request_method' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'request_uri' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'server_protocol' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'http_headers' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'user_agent' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'request_entity' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+      'key' => [
+        'type' => 'text',
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'ip' => [['ip', 15]],
+      'user_agent' => [['user_agent', 10]],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function badbehavior_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'runtime') {
+    $project_link = Link::fromTextAndUrl(t('project page'), Url::fromUri('https://www.drupal.org/project/badbehavior',array()))->toString();
+    if (badbehavior_load_includes()) {
+      if (BB2_VERSION == '2.2.20') {
+        $requirements['badbehavior'] = [
+          'value' => BB2_VERSION,
+          'severity' => REQUIREMENT_OK,
+        ];
+      }
+      else {
+        $requirements['badbehavior'] = [
+          'value' => BB2_VERSION,
+          'severity' => REQUIREMENT_WARNING,
+          'description' => t('Bad Behavior files are installed, but are not the recommended version (2.2.20). See the @link for exact installation details.', ['@link' => $project_link]),
+        ];
+      }
+    }
+    else {
+      $requirements['badbehavior'] = [
+        'value' => t('Missing BadBehavior library'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => t('Required Bad Behavior files are not found. See the @link for installation details.', ['@link' => $project_link]),
+      ];
+    }
+    $requirements['badbehavior']['title'] = t('Bad Behavior');
+  }
+  return $requirements;
+}

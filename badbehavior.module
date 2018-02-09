@@ -1,0 +1,187 @@
+<?php
+
+/**
+ * @file
+ * Contains badbehavior.module.
+ * Integrates Bad Behavior with Drupal
+ */
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+
+// Point BB scripts path to new universal libraries directory.
+define('BB2_CWD', './sites/all/libraries/bad-behavior');
+
+/**
+ * Implements hook_help().
+ */
+function badbehavior_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.badbehavior':
+      $output = '';
+      $output .= '<p>' . t("The Bad Behavior module examines HTTP requests from visitors to your web site, and any suspicious requests are logged for later review. Suspicious visitors are shown an error page with instructions on how to view the site without triggering the bad behavior error messages.") . '</p>';
+      return $output;
+    default:
+  }
+}
+
+function badbehavior_start_badbehavior() {
+  if (badbehavior_load_includes()) {
+    $settings = bb2_read_settings();
+    bb2_start($settings);
+  }
+}
+
+/**
+ * Load BadBehavior library files.
+ *
+ * Check to make sure the main Bad Behavior files (external content) exist
+ * and require them for the module to actually work. The default location
+ * is /sites/all/libraries/bad-behavior/bad-behavior/
+ *
+ * @return bool
+ * Returns TRUE if files exist and are read, otherwise returns FALSE
+ */
+function badbehavior_load_includes() {
+  if (is_file(BB2_CWD . '/bad-behavior/core.inc.php') &&
+      is_file(BB2_CWD . '/bad-behavior/responses.inc.php') &&
+      is_file(BB2_CWD . '/bad-behavior-mysql.php')) {
+    require_once(BB2_CWD . '/bad-behavior/core.inc.php');
+    require_once(BB2_CWD . '/bad-behavior/responses.inc.php');
+    require_once(BB2_CWD . '/bad-behavior-mysql.php');
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Return current time in the format preferred by your database.
+ *
+ * @return string
+ */
+function bb2_db_date() {
+   return gmdate('Y-m-d H:i:s'); // Example is MySQL format
+}
+
+/**
+ * Escape a string for database usage
+ *
+ * @param string $string
+ *
+ * @return string
+ */
+function bb2_db_escape($string) {
+  return \Drupal::database()->escapeField($string);
+}
+
+/**
+ * Run a query and return the results, if any.
+ *
+ * @param type $query
+ * @return object
+ */
+function bb2_db_query($query) {
+  try {
+    $result = \Drupal::database()->query($query);
+    return $result->fetchAll();
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
+}
+
+/**
+ * Return all rows in a particular query.
+ *
+ * @return object
+ */
+function bb2_db_rows($result) {
+  return $result;
+}
+
+/**
+ * Fetch the admin's email address.
+ *
+ * @return string
+ */
+function bb2_email() {
+  $email = \Drupal::config('badbehavior.settings')->get('mail');
+  if (empty($email)) {
+    $email = \Drupal::config('system.site')->get('mail');
+  }
+  return $email ? $email : ini_get('sendmail_from');
+}
+
+/**
+ * Retrieve settings from database.
+ *
+ * @return array
+ */
+function bb2_read_settings() {
+  $config = \Drupal::config('badbehavior.settings');
+  $settings = array(
+    'log_table' => $config->get('log_table'),
+    'display_stats' => $config->get('display_stats'),
+    'eu_cookie' => $config->get('eu_cookie'),
+    'logging' => $config->get('logging'),
+    'verbose' => $config->get('verbose'),
+    'strict' => $config->get('strict'),
+    'offsite_forms' => $config->get('offsite_forms'),
+    'httpbl_key' => $config->get('httpbl.key'),
+    'httpbl_threat' => $config->get('httpbl.threat'),
+    'httpbl_maxage' => $config->get('httpbl.age'),
+    'reverse_proxy' => $config->get('reverse_proxy.enabled'),
+    'reverse_proxy_header' => $config->get('reverse_proxy.header'),
+    'reverse_proxy_addresses' => [],
+  );
+  $proxy_addresses = $config->get('reverse_proxy.addresses');
+  if ($proxy_addresses) {
+    $proxy_addresses = str_replace("\r", "", $proxy_addresses);
+    $proxy_addresses = explode("\n", $proxy_addresses);
+    foreach ($proxy_addresses as &$address) {
+      $address = trim($address);
+      if ($address) {
+        $settings['reverse_proxy_addresses'][] = $address;
+      }
+    }
+  }
+  return $settings;
+}
+
+/**
+ * Return the top-level relative path of wherever we are (for cookies).
+ *
+ * @return string
+ */
+function bb2_relative_path() {
+  global $base_path;
+  return $base_path;
+}
+
+/**
+ * Implements hook_page_bottom().
+ *
+ * Adds a hidden Project Honey Pot QuickLink link to the footer of every page.
+ */
+function badbehavior_page_bottom(array &$page_bottom) {
+  if (\Drupal::currentUser()->isAnonymous()) {
+    $link_url = \Drupal::config('badbehavior.settings')->get('httpbl.quicklink');
+    if ($link_url) {
+      $url = Url::fromUri($link_url);
+      $text = \Drupal::config('badbehavior.settings')->get('httpbl.quicklinktext');
+      $link = Link::fromTextAndUrl($text, $url);
+      $page_bottom['badbehavior'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#value' => $link->toString(),
+        '#attributes' => [
+          'class' => 'hp-link',
+          'style' => 'display: none !important; opacity: 0.0;',
+        ],
+      ];
+
+    }
+  }
+}

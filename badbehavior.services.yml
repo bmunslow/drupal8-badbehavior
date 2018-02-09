@@ -1,0 +1,5 @@
+services:
+  badbehavior.badbehavior_subscriber:
+    class: Drupal\badbehavior\EventSubscriber\BadBehaviorSubscriber
+    tags:
+      - { name: 'event_subscriber' }

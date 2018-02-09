@@ -1,0 +1,23 @@
+badbehavior.admin:
+  path: '/admin/config/system/badbehavior'
+  defaults:
+    _form: '\Drupal\badbehavior\Form\BadbehaviorConfigurationForm'
+    _title: 'Bad Behavior'
+  requirements:
+    _permission: 'administer site configuration'
+
+badbehavior.log:
+  path: '/admin/reports/badbehavior'
+  defaults:
+    _controller: '\Drupal\badbehavior\Controller\BadBehaviorController::BBLogMessages'
+    _title: 'Bad Behavior Log'
+  requirements:
+    _permission: 'access site reports'
+
+badbehavior.event:
+  path: '/admin/reports/badbehavior/event/{event_id}'
+  defaults:
+    _controller: '\Drupal\badbehavior\Controller\BadBehaviorController::eventDetails'
+    _title: 'Details'
+  requirements:
+    _permission: 'access site reports'

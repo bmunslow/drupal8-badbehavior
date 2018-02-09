@@ -1,0 +1,63 @@
+badbehavior.settings:
+  type: config_object
+  label: 'Badbehavior settings'
+  mapping:
+    log_table:
+      type: string
+      label: 'Log table'
+    display_stats:
+      type: boolean
+      label: 'Display stats'
+    eu_cookie:
+      type: boolean
+      label: 'EU Cookie'
+    mail:
+      type: email
+      label: 'Administrator Email'
+    logging:
+      type: boolean
+      label: 'Enable Logging'
+    verbose:
+      type: boolean
+      label: 'Logging mode'
+    log_timeformat:
+      type: string
+      label: Logging Time Display Format
+    offsite_forms:
+      type: boolean
+      label: Offsite Forms
+    strict:
+      type: boolean
+      label: 'Enable strict mode'
+    httpbl:
+      type: mapping
+      label: 'Project Honey Pot Support'
+      mapping:
+        key:
+          type: string
+          label: 'Your http:BL Access Key'
+        threat:
+          type: integer
+          label: 'http:BL Threat Level'
+        age:
+          type: integer
+          label: 'http:BL Maximum Threat Age'
+        quicklink:
+          type: uri
+          label: 'Project Honey Pot QuickLink'
+        quicklinktext:
+          type: string
+          label: 'Customize This'
+    reverse_proxy:
+      type: mapping
+      label: 'Reverse Proxy/Load Balancer Support (Advanced Option)'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Enable Reverse Proxy Support'
+        header:
+          type: string
+          label: 'Reverse Proxy Header'
+        addresses:
+          type: text
+          label: 'Reverse Proxy Adresses'

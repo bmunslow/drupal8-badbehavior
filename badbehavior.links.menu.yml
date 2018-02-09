@@ -1,0 +1,11 @@
+badbehavior.admin:
+  title: 'Bad Behavior'
+  route_name: badbehavior.admin
+  description: 'Bad Behavior configuration'
+  parent: system.admin_config_system
+  weight: 20
+badbehavior.log:
+  title: 'BadBehavior Log'
+  route_name: badbehavior.log
+  description: 'View BadBehavior Log'
+  parent: system.admin_reports
