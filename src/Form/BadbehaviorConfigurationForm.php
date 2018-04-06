@@ -185,7 +185,7 @@ class BadbehaviorConfigurationForm extends ConfigFormBase {
     if (!valid_email_address($form_state->getValue('mail'))) {
       $form_state->setErrorByName('mail', $this->t('The e-mail address is not valid.'));
     }
-    if (!UrlHelper::isValid($form_state->getValue('quicklink'), $absolute = TRUE)) {
+    if ($form_state->getValue('quicklink') && !UrlHelper::isValid($form_state->getValue('quicklink'), $absolute = TRUE)) {
       $form_state->setErrorByName('quicklink', $this->t('The Project Honey Pot QuickLink must be an absolute URL, starting with http:// or https://'));
     }
   }
